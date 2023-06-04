@@ -1,4 +1,4 @@
-use std::{env, iter::FromIterator, path::Path};
+use std::{env, iter::FromIterator, path::Path, fs::File, io::BufReader};
 
 use convert_case::{Case, Casing};
 
@@ -1290,9 +1290,8 @@ pub fn check_json(file_name: &str, commit: &str) -> Protocol {
         //     commit, file_name
         // );
 
-        let file = File::open(file_path)?;
+        let file = File::open("./json/".to_string() + file_name).unwrap();
         let reader = BufReader::new(file);
-        let json = serde_json::from_reader(reader)?;
 
         // let json = ureq_agent
         //     .get(&url)
@@ -1305,7 +1304,7 @@ pub fn check_json(file_name: &str, commit: &str) -> Protocol {
         //     .into_string()
         //     .expect("Received JSON is not valid UTF8");
 
-        let protocol: Protocol = serde_json::from_str(&json).unwrap();
+        let protocol: Protocol = serde_json::from_reader(reader).unwrap();
 
         protocol
     }
