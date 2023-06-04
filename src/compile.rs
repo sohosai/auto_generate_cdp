@@ -1269,37 +1269,41 @@ pub fn check_json(file_name: &str, commit: &str) -> Protocol {
 
         protocol
     } else {
-        let ureq_agent = {
-            let mut builder = ureq::AgentBuilder::new();
+        // let ureq_agent = {
+        //     let mut builder = ureq::AgentBuilder::new();
 
-            // use HTTP proxy from environment variables if available
-            if let Ok(addr) = env::var("https_proxy")
-                .or(env::var("http_proxy"))
-                .or(env::var("ALL_PROXY"))
-            {
-                let proxy = ureq::Proxy::new(addr)
-                    .expect("Invalid proxy specified in environment variables");
-                builder = builder.proxy(proxy);
-            }
+        //     // use HTTP proxy from environment variables if available
+        //     if let Ok(addr) = env::var("https_proxy")
+        //         .or(env::var("http_proxy"))
+        //         .or(env::var("ALL_PROXY"))
+        //     {
+        //         let proxy = ureq::Proxy::new(addr)
+        //             .expect("Invalid proxy specified in environment variables");
+        //         builder = builder.proxy(proxy);
+        //     }
 
-            builder.build()
-        };
+        //     builder.build()
+        // };
 
-        let url = format!(
-            "https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/{}/json/{}",
-            commit, file_name
-        );
+        // let url = format!(
+        //     "https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/{}/json/{}",
+        //     commit, file_name
+        // );
 
-        let json = ureq_agent
-            .get(&url)
-            .call()
-            .expect(
-                "Request error. If you are behind a firewall, perhaps using a proxy will help. \
-                Environment variables \"https_proxy\", \"http_proxy\", and \"ALL_PROXY\" are used \
-                in that order.",
-            )
-            .into_string()
-            .expect("Received JSON is not valid UTF8");
+        let file = File::open(file_path)?;
+        let reader = BufReader::new(file);
+        let json = serde_json::from_reader(reader)?;
+
+        // let json = ureq_agent
+        //     .get(&url)
+        //     .call()
+        //     .expect(
+        //         "Request error. If you are behind a firewall, perhaps using a proxy will help. \
+        //         Environment variables \"https_proxy\", \"http_proxy\", and \"ALL_PROXY\" are used \
+        //         in that order.",
+        //     )
+        //     .into_string()
+        //     .expect("Received JSON is not valid UTF8");
 
         let protocol: Protocol = serde_json::from_str(&json).unwrap();
 
